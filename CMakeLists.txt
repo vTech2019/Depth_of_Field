@@ -8,7 +8,7 @@ set(CUDA_CUDART_LIBRARY "/usr/local/cuda/lib64/libcudart.so")
 set(CUDA_NVCC_EXECUTABLE "/usr/local/cuda-10.1/bin/nvcc")
 #enable_language(CUDA)
 #set(OpenCV_DIR "C:/libs/opencv/build")
-
+set(CUDA_DEBUGGER_SOFTWARE_PREEMPTION 1)
 set(-DCMAKE_GENERATOR_PLATFORM x64)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

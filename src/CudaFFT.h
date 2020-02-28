@@ -1,28 +1,20 @@
 #include <vector>
+#include <stdio.h>
 #include <cufft.h>
 #include <host_defines.h>
 #include <device_launch_parameters.h>
 #include <cuda_runtime.h>
-inline cudaError_t checkCuda(cudaError_t result)
-{
-#if defined(DEBUG) || defined(_DEBUG)
-  if (result != cudaSuccess) {
-    fprintf(stderr, "CUDA Runtime Error: %sn", cudaGetErrorString(result));
-    assert(result == cudaSuccess);
-  }
-#endif
-  return result;
-}
-inline cufftResult checkCudaFFT(cufftResult result)
-{
-#if defined(DEBUG) || defined(_DEBUG)
-    if (result != CUFFT_SUCCESS) {
-      fprintf(stderr, "CUDA Runtime Error: %sn", cudaGetErrorString(result));
-      assert(result == cudaSuccess);
-    }
-#endif
-  return result;
-}
+#define checkCuda(msg) \
+    do { \
+        cudaError_t __err = msg; \
+        if (__err != cudaSuccess) { \
+            fprintf(stderr, "Error: %s (%s:%d)\n", \
+                cudaGetErrorString(__err), \
+                __FILE__, __LINE__); \
+            exit(0); \
+        } \
+    } while (0)
+ cufftResult checkCudaFFT(cufftResult result);
 struct cudaMatrixImages{
     float* data;
     size_t width;
@@ -60,6 +52,21 @@ struct cudaMatrixImages{
         height = 0;
         data = nullptr;
     }
+};
+class cudaAmountSharpeningClass{
+    int numberDevices;
+    std::vector<cudaDeviceProp> deviceProperties;
+    std::vector<int> idDevice;
+    std::vector<cudaStream_t> streams;
+    std::vector<cufftHandle> plan_fwd;
+    std::vector<cufftComplex*> gpuComplexImages;
+    float2* gpuSum;
+public:
+    std::vector<float> sharpening;
+    std::vector<float>* calculate(std::vector<cudaMatrixImages>& images);
+    cudaAmountSharpeningClass(std::vector<cudaMatrixImages>& images);
+    cudaAmountSharpeningClass(size_t numberImages, size_t width, size_t height);
+    ~cudaAmountSharpeningClass();
 };
 void cudaAmplitudeFFT(std::vector<cudaMatrixImages>& images);
 void cudaAmplitudeManyPlanFFT(std::vector<cudaMatrixImages>& images);
